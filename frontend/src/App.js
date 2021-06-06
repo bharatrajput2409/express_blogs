@@ -1,28 +1,41 @@
 import React, { Component } from "react";
 import axios from "axios";
+import CircularProgressWithLabel from "./components/ProgressWithLabel";
 export class App extends Component {
   constructor(props) {
     super(props);
 
     this.state = {
       selectedFile: null,
+      uploadProgress: 0,
     };
   }
   uploadFileApi = async (e) => {
-    const data = new FormData();
-    data.append("file", this.state.selectedFile);
+    const data = {
+      file: this.state.selectedFile,
+    };
     try {
-      let res = await axios.post("http://localhost:4000/uploadfile", data);
+      let res = await axios.post("http://localhost:4000/uploadfile", data, {
+        onUploadProgress: (ProgressEvent) => {
+          this.setState({
+            uploadProgress: (ProgressEvent.loaded / ProgressEvent.total) * 100,
+          });
+        },
+      });
       console.log(res);
     } catch (err) {
       console.log(err);
     }
   };
   onChangeHandler = (event) => {
-    this.setState({
-      selectedFile: event.target.files[0],
-      loaded: 0,
-    });
+    const reader = new FileReader();
+    reader.readAsDataURL(event.target.files[0]);
+    reader.onload = () => {
+      this.setState({
+        selectedFile: reader.result,
+        loaded: 0,
+      });
+    };
   };
 
   render() {
@@ -33,6 +46,7 @@ export class App extends Component {
         <button type="submit" onClick={this.uploadFileApi}>
           Upload
         </button>
+        <CircularProgressWithLabel value={this.state.uploadProgress} />
       </div>
     );
   }

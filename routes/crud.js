@@ -5,10 +5,11 @@ var path = require("path");
 const reader = require("xlsx");
 const response = require("../response.json");
 const jwt = require("jsonwebtoken");
-const multer = require("multer");
-const upload = multer({ storage: multer.memoryStorage() });
-Router.post("/uploadfile", upload.single("file"), async (req, res) => {
-  const file = reader.read(req.file.buffer, { type: "buffer" });
+
+Router.post("/uploadfile", async (req, res) => {
+  console.log(req.body);
+  const buffer = Buffer.from(req.body.file.split(",")[1], "base64");
+  const file = reader.read(buffer, { type: "buffer" });
   console.log(file);
   try {
     let data = [];
